@@ -39,14 +39,15 @@ int main(int argc, char**argv) {
   servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
   servaddr.sin_port = htons(39501);
   bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
+  printf("== CS395T Controller Start ==\n");
 
   while (1) {
     cc_msg_t reply;
     next_msg = allocMsg(1);
     len = sizeof(cliaddr);
     n = recvfrom(sockfd, next_msg, sizeof(cc_msg_t), MSG_WAITALL, (struct sockaddr *) &cliaddr, &len);
-    sendto(sockfd, &reply, sizeof(cc_msg_t), 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
     msg_decoder(next_msg, &reply);
-    printf("Received the following:\n");
+    sendto(sockfd, &reply, sizeof(cc_msg_t), 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
+    printf("Received the following: %d\n", n);
   }
 }
