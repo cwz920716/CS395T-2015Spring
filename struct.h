@@ -8,7 +8,7 @@
 #define msg_type_t             uint8_t
 #define host_name_t            uint32_t 
 #define host_port_t            uint16_t 
-#define msg_id_t               uint64_t
+#define msg_id_t               uint32_t
 #define cc_event_t             uint8_t
 #define cc_status_t            uint8_t
 

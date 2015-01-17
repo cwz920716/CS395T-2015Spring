@@ -1,6 +1,7 @@
 #include "struct.h"
 #include <math.h>
 #include <stdio.h>
+#include <arpa/inet.h>
 
 static void ping(cc_msg_ptr in, cc_msg_ptr out) {
   out->type = MSG_PING;
@@ -60,9 +61,43 @@ static void request(cc_request_ptr in, cc_reply_ptr out) {
   }
 }
 
+void msg_localize(cc_msg_ptr in) {
+  msg_type_t in_type = in->type;
+
+  in->hname = ntohl(in->hname);
+  in->hport = ntohs(in->hport);
+  in->seqno = ntohl(in->seqno);
+  if (in_type == MSG_REQUEST) {
+    cc_request_ptr req = &in->data.request;
+    req->segmentSize = ntohl(req->segmentSize);
+    req->cWnd = ntohl(req->cWnd);
+    req->ssThresh = ntohl(req->ssThresh);
+    req->recover = ntohl(req->recover);
+    req->inflights = ntohl(req->inflights);
+    req->highTxMark = ntohl(req->highTxMark);
+    req->txBufferHead = ntohl(req->txBufferHead);
+    req->seq = ntohl(req->seq);
+  }
+}
+
+void msg_globalize(cc_msg_ptr in) {
+  msg_type_t in_type = in->type;
+
+  in->hname = htonl(in->hname);
+  in->hport = htons(in->hport);
+  in->seqno = htonl(in->seqno);
+  if (in_type == MSG_REPLY) {
+    cc_reply_ptr reply = &in->data.reply;
+    reply->cWnd = htonl(reply->cWnd);
+    reply->ssThresh = htonl(reply->ssThresh);
+    reply->recover = htonl(reply->recover);
+  }
+}
+
 void msg_decoder(cc_msg_ptr in, cc_msg_ptr out) {
 
   msg_type_t in_type = in->type;
+  msg_localize(in);
 
   switch (in_type) {
     case MSG_PING: 
@@ -80,6 +115,7 @@ void msg_decoder(cc_msg_ptr in, cc_msg_ptr out) {
   out->hport = in->hport; 
   out->seqno = in->seqno + 1;
 
+  msg_globalize(out);
 }
 
 static int reply_verifier(cc_reply_ptr in, cc_reply_ptr ref) {
@@ -118,7 +154,7 @@ static int msg_verifier(cc_msg_ptr in, cc_msg_ptr ref) {
   }
  
   if (in->seqno != ref->seqno) {
-    printf("seqno should be %ld but is %ld\n", ref->seqno, in->seqno);
+    printf("seqno should be %d but is %d\n", ref->seqno, in->seqno);
     return -1;
   }
 
