@@ -7,12 +7,9 @@
 #include <netinet/in.h>
 #include "struct.h"
 
-#define MAXPENDING 5    /* Max connection requests */
-#define BUFFSIZE 32
-
 void Die(char *mess) { perror(mess); exit(1); }
 
-#define N_MSG 2014
+#define N_MSG 1024
 cc_msg_t msgPool[N_MSG];
 int next = 0;
 int count = 0;
